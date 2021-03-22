@@ -34,6 +34,8 @@ class MyBot(commands.Bot):
                 except commands.ExtensionAlreadyLoaded:
                     self.reload_extension(f"cogs.{cog[:-3]}")
 
+        await self.change_presence(activity=discord.Game(name=f"{prefix}help"))
+
 
 if __name__ == '__main__':
     try:
