@@ -3,6 +3,9 @@ import asyncio
 from discord.ext import commands
 import os
 import traceback
+from dotenv import load_dotenv
+
+load_dotenv()  # 環境変数を.envから設定
 
 token = os.environ["TOKEN"]
 prefix = "#"
