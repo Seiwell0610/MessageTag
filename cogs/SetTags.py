@@ -38,6 +38,7 @@ class SetTags(commands.Cog):
         except sq3.OperationalError:
             cursor.execute(f'CREATE TABLE "{ctx.author.id}"'
                            f'(Tag_name TEXT NOT NULL, Unique_Name TEXT NOT NULL UNIQUE, Message_Link TEXT NOT NULL)')
+            connect.commit()
             await ctx.send(f"{ctx.author.mention}-> DBを作成しました。再度コマンドを実行してみて下さい。")
 
     @commands.command()
@@ -71,6 +72,7 @@ class SetTags(commands.Cog):
         except sq3.OperationalError:  # ユーザーのテーブルが存在しない場合、自動的に作成
             cursor.execute(f'CREATE TABLE "{ctx.author.id}"'
                            f'(Tag_name TEXT NOT NULL, Unique_Name TEXT NOT NULL UNIQUE, Message_Link TEXT NOT NULL)')
+            connect.commit()
             await ctx.send(f"{ctx.author.mention}-> DBを作成しました。再度コマンドを実行してみて下さい。")
 
 
@@ -95,6 +97,7 @@ class SetTags(commands.Cog):
         except sq3.OperationalError:
             cursor.execute(f'CREATE TABLE "{ctx.author.id}"'
                            f'(Tag_name TEXT NOT NULL, Unique_Name TEXT NOT NULL UNIQUE, Message_Link TEXT NOT NULL)')
+            connect.commit()
             await ctx.send(f"{ctx.author.mention}-> DBを作成しました。再度コマンドを実行してみて下さい。")
 
     @commands.command()
@@ -105,6 +108,7 @@ class SetTags(commands.Cog):
         except sq3.OperationalError:
             cursor.execute(f'CREATE TABLE "{ctx.author.id}"'
                            f'(Tag_name TEXT NOT NULL, Unique_Name TEXT NOT NULL UNIQUE, Message_Link TEXT NOT NULL)')
+            connect.commit()
             await ctx.send(f"{ctx.author.mention}-> DBを作成しました。")
 
 
