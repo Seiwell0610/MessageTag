@@ -26,7 +26,7 @@ class MyBot(commands.Bot):
         self.remove_command('help')
 
     async def on_ready(self):
-        path = "./cogs"
+        path = "/home/seiwell/DiscordBot/MessageTag/cogs/"
         for cog in os.listdir(path):
             if cog.endswith(".py"):
                 try:
