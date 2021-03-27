@@ -104,10 +104,7 @@ class SetTags(commands.Cog):
     @commands.command()
     async def mytag(self, ctx):
         data = cursor.execute(f'SELECT DISTINCT Tag_name From "{ctx.author.id}"').fetchall()
-        description = ''
-        for _ in data:
-            description += "・" + _[0] + "\n"
-        embed = discord.Embed(title="タグ一覧", description=description, color=discord.Color.purple())
+        embed = discord.Embed(title="タグ一覧", description="・{0}".format("\n・".join([row[0] for row in data])), color=discord.Color.purple())
         await ctx.send(embed=embed)
 
     @commands.command()
