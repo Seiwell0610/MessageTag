@@ -7,7 +7,8 @@ import re
 print(f"{os.path.basename(__file__)}")
 
 # データベースに接続
-connect = sq3.connect("all_data.db")
+path = "/home/seiwell/DiscordBot/MessageTag/all_data.db"
+connect = sq3.connect(path)
 cursor = connect.cursor()
 
 
