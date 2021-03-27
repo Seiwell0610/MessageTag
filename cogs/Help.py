@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import os
 
-print(f"{os.path.basename(__file__)}")
+print(os.path.basename(__file__))
 
 
 class Help(commands.Cog):
