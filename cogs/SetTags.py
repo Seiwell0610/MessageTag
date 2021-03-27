@@ -101,6 +101,15 @@ class SetTags(commands.Cog):
             await ctx.send(f"{ctx.author.mention}-> DBを作成しました。再度コマンドを実行してみて下さい。")
 
     @commands.command()
+    async def mytag(self, ctx):
+        data = cursor.execute(f'SELECT DISTINCT Tag_name From "{ctx.author.id}"').fetchall()
+        description = ''
+        for _ in data:
+            description += "・" + _[0] + "\n"
+        embed = discord.Embed(title="タグ一覧", description=description, color=discord.Color.purple())
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def ac(self, ctx):
         try:
             cursor.execute(f'SELECT * FROM "{ctx.author.id}"')
