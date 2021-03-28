@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()  # 環境変数を.envから設定
 
 token = os.environ["TOKEN"]
-prefix = "#"
+prefix = "mt#"
 loop = asyncio.new_event_loop()
 
 
