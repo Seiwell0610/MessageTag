@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import os
+import asyncio
 import sqlite3 as sq3
 import re
 
@@ -43,7 +44,7 @@ class SetTags(commands.Cog):
             await ctx.send(f"{ctx.author.mention}-> DBを作成しました。再度コマンドを実行してみて下さい。")
 
     @commands.command()
-    async def add(self, ctx, tag_name: str = None, unique_name: str = None, value: str = None):
+    async def add(self, ctx):
         # 正規表現
         regex_discord_message_url = (
             'https://(ptb.|canary.)?discord(app)?.com/channels/'
@@ -51,30 +52,65 @@ class SetTags(commands.Cog):
         )
 
         try:
-            if tag_name is None:
-                return await ctx.send(f"{ctx.author.mention}-> タグを指定してください。")
+            cursor.execute(f'SELECT * FROM "{ctx.author.id}"').fetchone()
+        except sq3.OperationalError:
+            cursor.execute(f'CREATE TABLE "{ctx.author.id}"'
+                           f'(Tag_name TEXT NOT NULL, Unique_Name TEXT NOT NULL UNIQUE, Message_Link TEXT NOT NULL)')
+            connect.commit()
 
-            if unique_name is None:
-                return await ctx.send(f"{ctx.author.mention}-> タイトルを指定してください。")
+        # 以下、タグ名指定処理
+        msg = await ctx.send("登録したいタグ名を入力してください。")
 
-            if value is None:
-                return await ctx.send(f"{ctx.author.mention}-> データを指定してください。")
+        def check(m):
+            return m.content and m.author == ctx.author
 
-            if re.fullmatch(regex_discord_message_url, value) is None:
-                return await ctx.send(f"{ctx.author.mention}-> メッセージリンクを指定してください。")
+        try:
+            check_tag_name = await self.bot.wait_for("message", timeout=30, check=check)
 
-            if cursor.execute(f'SELECT * FROM "{ctx.author.id}" WHERE Unique_Name = ?', (unique_name, )).fetchone() is not None:
-                return await ctx.send(f"{ctx.author.mention}-> タイトルが重複しているため保存できません。")
+        except asyncio.TimeoutError:
+            return await ctx.send("タイムアウトしました。")
+
+        else:
+            if check_tag_name is not None:
+                tag_name = check_tag_name.content
+                await check_tag_name.delete()
+
+        # 以下、タイトル指定処理
+        await msg.edit(content="タグ名の指定が完了しました。\n続いて、タイトルを入力してください。")
+
+        try:
+            check_unique_name = await self.bot.wait_for("message", timeout=30, check=check)
+
+        except asyncio.TimeoutError:
+            return await ctx.send("タイムアウトしました。")
+
+        else:
+            if check_unique_name is not None:
+                unique_name = check_unique_name.content
+                if cursor.execute(f'SELECT * FROM "{ctx.author.id}" WHERE Unique_Name = ?', (unique_name,)).fetchone() is not None:
+                    return await ctx.send(f"{ctx.author.mention}-> タイトルが重複しているため保存できません。")
+                await check_unique_name.delete()
+
+        # 以下、データ指定処理
+        await msg.edit(connect="タイトルの指定が完了しました。\n最後に、タグ付けを行いたいメッセージリンクを入力してください。")
+
+        try:
+            check_value_name = await self.bot.wait_for("message", timeout=30, check=check)
+
+        except asyncio.TimeoutError:
+            return await ctx.send("タイムアウトしました。")
+
+        else:
+            if check_value_name is not None:
+                value = check_value_name.content
+                if re.fullmatch(regex_discord_message_url, value) is None:
+                    return await ctx.send(f"{ctx.author.mention}-> メッセージリンクを指定してください。")
+                await msg.delete()
+                await check_value_name.delete()
 
             cursor.execute(f'INSERT INTO "{ctx.author.id}" VALUES (?, ?, ?)', (tag_name, unique_name, value))
             connect.commit()
             return await ctx.send(f"{ctx.author.mention}-> 該当のデータを追加しました。")
-
-        except sq3.OperationalError:  # ユーザーのテーブルが存在しない場合、自動的に作成
-            cursor.execute(f'CREATE TABLE "{ctx.author.id}"'
-                           f'(Tag_name TEXT NOT NULL, Unique_Name TEXT NOT NULL UNIQUE, Message_Link TEXT NOT NULL)')
-            connect.commit()
-            await ctx.send(f"{ctx.author.mention}-> DBを作成しました。再度コマンドを実行してみて下さい。")
 
 
     @commands.command()
