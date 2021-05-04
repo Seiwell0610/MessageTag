@@ -114,28 +114,65 @@ class SetTags(commands.Cog):
 
 
     @commands.command()
-    async def remove(self, ctx, tag_name: str = None, unique_name: str = None):
+    async def remove(self, ctx):
         try:
-            if tag_name is None:
-                return await ctx.send(f"{ctx.author.mention}-> タグを指定してください。")
-
-            if unique_name is None:
-                return await ctx.send(f"{ctx.author.mention}-> タイトルを指定してください。")
-
-            data = cursor.execute(f'SELECT * FROM "{ctx.author.id}" WHERE Tag_Name = ? and Unique_Name = ?', (tag_name, unique_name, )).fetchone()
-
-            if data is None:
-                return await ctx.send(f"{ctx.author.mention}-> 該当のデータがありません。")
-
-            cursor.execute(f'DELETE FROM "{ctx.author.id}" WHERE Tag_Name = ? and Unique_Name = ?', (tag_name, unique_name))
-            connect.commit()
-            return await ctx.send(f"{ctx.author.mention}-> 該当のデータを削除しました。")
-
+            cursor.execute(f'SELECT * FROM "{ctx.author.id}"').fetchone()
         except sq3.OperationalError:
             cursor.execute(f'CREATE TABLE "{ctx.author.id}"'
                            f'(Tag_name TEXT NOT NULL, Unique_Name TEXT NOT NULL UNIQUE, Message_Link TEXT NOT NULL)')
             connect.commit()
-            await ctx.send(f"{ctx.author.mention}-> DBを作成しました。再度コマンドを実行してみて下さい。")
+
+        msg = await ctx.send("削除したいデータに関連付けされているタグ名を指定してください。")
+        data = cursor.execute(f'SELECT DISTINCT Tag_name From "{ctx.author.id}"').fetchall()
+        embed = discord.Embed(title="タグ一覧", description="・{0}".format("\n・".join([row[0] for row in data])),
+                              color=discord.Color.purple())
+        msg_em_1 = await ctx.send(embed=embed)
+
+        def check(m):
+            return m.content and m.author == ctx.author
+
+        try:
+            check_tag_name = await self.bot.wait_for("message", timeout=30, check=check)
+
+        except asyncio.TimeoutError:
+            return await ctx.send("タイムアウトしました。")
+
+        else:
+            if check_tag_name is not None:
+                tag_name = check_tag_name.content
+                data = cursor.execute(f'SELECT * FROM "{ctx.author.id}" WHERE tag_name=?', (tag_name,)).fetchall()
+
+                # 該当のタグが付いているデータがない場合
+                if data is None:
+                    return await ctx.send(f"{ctx.author.mention}-> 該当のタグの付いているデータはありませんでした。")
+
+                await check_tag_name.delete()
+                await msg_em_1.delete()
+
+        await msg.edit(content="タグ名の指定が完了しました。\n削除したいタイトルを指定してください。")
+
+        # あった場合
+        embed = discord.Embed(title=f"**{tag_name}**の付いているタグを{len(data)}件見つかりました。", color=discord.Color.green())
+        for row in data:
+            embed.add_field(name=f"{row[1]}", value=f"[{row[2][:35]}...]({row[2]})", inline=False)
+        msg_em_2 = await ctx.send(embed=embed)
+
+        try:
+            check_title_name = await self.bot.wait_for("message", timeout=30, check=check)
+
+        except asyncio.TimeoutError:
+            return await ctx.send("タイムアウトしました。")
+
+        else:
+            if check_title_name is not None:
+                unique_name = check_title_name.content
+                await check_title_name.delete()
+                await msg_em_2.delete()
+                await msg.delete()
+                cursor.execute(f'DELETE FROM "{ctx.author.id}" WHERE Tag_Name = ? and Unique_Name = ?',
+                               (tag_name, unique_name))
+                connect.commit()
+                return await ctx.send(f"{ctx.author.mention}-> 該当のデータを削除しました。")
 
     @commands.command()
     async def mytag(self, ctx):
