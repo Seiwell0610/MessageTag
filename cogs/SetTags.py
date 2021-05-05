@@ -72,6 +72,7 @@ class SetTags(commands.Cog):
             check_tag_name = await self.bot.wait_for("message", timeout=30, check=check)
 
         except asyncio.TimeoutError:
+            await msg.delete()
             await msg_em_1.delete()
             return await ctx.send("タイムアウトしました。")
 
@@ -88,6 +89,7 @@ class SetTags(commands.Cog):
             check_unique_name = await self.bot.wait_for("message", timeout=30, check=check)
 
         except asyncio.TimeoutError:
+            await msg.delete()
             return await ctx.send("タイムアウトしました。")
 
         else:
@@ -104,6 +106,7 @@ class SetTags(commands.Cog):
             check_value_name = await self.bot.wait_for("message", timeout=30, check=check)
 
         except asyncio.TimeoutError:
+            await msg.delete()
             return await ctx.send("タイムアウトしました。")
 
         else:
@@ -141,6 +144,8 @@ class SetTags(commands.Cog):
             check_tag_name = await self.bot.wait_for("message", timeout=30, check=check)
 
         except asyncio.TimeoutError:
+            await msg.delete()
+            await msg_em_1.delete()
             return await ctx.send("タイムアウトしました。")
 
         else:
@@ -167,6 +172,8 @@ class SetTags(commands.Cog):
             check_title_name = await self.bot.wait_for("message", timeout=30, check=check)
 
         except asyncio.TimeoutError:
+            await msg.delete()
+            await msg_em_2.delete()
             return await ctx.send("タイムアウトしました。")
 
         else:
