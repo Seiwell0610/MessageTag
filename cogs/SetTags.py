@@ -60,6 +60,10 @@ class SetTags(commands.Cog):
 
         # 以下、タグ名指定処理
         msg = await ctx.send("登録したいタグ名を入力してください。")
+        data = cursor.execute(f'SELECT DISTINCT Tag_name From "{ctx.author.id}"').fetchall()
+        embed = discord.Embed(title="タグ一覧", description="・{0}".format("\n・".join([row[0] for row in data])),
+                              color=discord.Color.purple())
+        msg_em_1 = await ctx.send(embed=embed)
 
         def check(m):
             return m.content and m.author == ctx.author
@@ -68,12 +72,14 @@ class SetTags(commands.Cog):
             check_tag_name = await self.bot.wait_for("message", timeout=30, check=check)
 
         except asyncio.TimeoutError:
+            await msg_em_1.delete()
             return await ctx.send("タイムアウトしました。")
 
         else:
             if check_tag_name is not None:
                 tag_name = check_tag_name.content
                 await check_tag_name.delete()
+                await msg_em_1.delete()
 
         # 以下、タイトル指定処理
         await msg.edit(content="タグ名の指定が完了しました。\n続いて、タイトルを入力してください。")
